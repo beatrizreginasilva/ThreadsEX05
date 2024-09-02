@@ -1,0 +1,51 @@
+package SOI5;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+
+
+public class EX05 {
+
+	public static void main(String[] args) {
+        Thread uolThread = new Thread(new PingTask("UOL", "www.uol.com.br"));
+        Thread terraThread = new Thread(new PingTask("Terra", "www.terra.com.br"));
+        Thread googleThread = new Thread(new PingTask("Google", "www.google.com.br"));
+
+        uolThread.start();
+        terraThread.start();
+        googleThread.start();
+    }
+}
+
+class PingTask implements Runnable {
+    private String serverName;
+    private String serverUrl;
+
+    public PingTask(String serverName, String serverUrl) {
+        this.serverName = serverName;
+        this.serverUrl = serverUrl;
+    }
+    
+    public void run() {
+        try {
+            Process process = Runtime.getRuntime().exec("ping -4 -c 10 " + serverUrl);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String line;
+            double totalTime = 0;
+            int count = 0;
+
+            while ((line = reader.readLine()) != null) {
+                if (line.contains("time=")) {
+                    String time = line.split("time=")[1].split(" ")[0];
+                    System.out.println(serverName + " - Iteração " + (count + 1) + ": " + time + " ms");
+                    totalTime += Double.parseDouble(time);
+                    count++;
+                }
+            }
+
+            double averageTime = totalTime / count;
+            System.out.println(serverName + " - Tempo médio: " + averageTime + " ms");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
